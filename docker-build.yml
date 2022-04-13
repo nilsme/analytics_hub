@@ -1,0 +1,34 @@
+version: '3'
+services:
+
+  proxy:
+    build:
+      context: ./traefik
+    image: ${REGISTRY}/hub_docker_proxy
+
+  fedora_hub_base:
+    build:
+      context: ./fedora_hub_base
+      args:
+        - REGISTRY=${REGISTRY}
+    image: ${REGISTRY}/fedora_hub_base
+
+  rstudio:
+    build:
+      context: ./rstudio
+      args:
+        - R_VERSION=${R_VERSION}
+        - RSTUDIO_VERSION=${RSTUDIO_VERSION}
+        - MINICONDA_VERSION=${MINICONDA_VERSION}
+    image: ${REGISTRY}/rstudio_docker_app
+    depends_on:
+      - fedora_hub_base
+
+  jupyterhub:
+    build:
+      context: ./jupyterhub
+      args:
+        - MINICONDA_VERSION=${MINICONDA_VERSION}
+    image: ${REGISTRY}/jupyterhub_docker_app
+    depends_on:
+      - fedora_hub_base
