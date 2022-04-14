@@ -4,9 +4,8 @@ ARG REGISTRY=localhost
 FROM ${REGISTRY}/fedora_hub_base
 
 # Set versions
-ARG R_VERSION
-ARG RSTUDIO_VERSION
-ARG MINICONDA_VERSION
+ARG R_VERSION=4.1.1
+ARG RSTUDIO_VERSION=2022.02.1-461
 
 # Set environment
 ENV TZ=Europe/Amsterdam
@@ -39,17 +38,6 @@ RUN curl https://download2.rstudio.org/server/rhel8/x86_64/rstudio-server-rhel-$
     yum install -y /tmp/rstudio-server.rpm && \
     rm /tmp/rstudio-server.rpm
 
-# Install miniconda3 for Python support
-RUN wget https://repo.continuum.io/miniconda/Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh \
-    -O /tmp/miniconda.sh  && \
-    bash /tmp/miniconda.sh -f -b -p /opt/python/conda && \
-    /opt/python/conda/bin/conda install --yes -c conda-forge \
-      python \
-      pip \
-      && \
-    /opt/python/conda/bin/pip install --upgrade pip && \
-    rm /tmp/miniconda.sh
-
 # Make Python visible to RStudio
 RUN echo 'options(rstudio.python.installationPath = "/opt/python/conda/bin")' \
     >> /etc/rstudio/Rprofile.site
@@ -58,4 +46,4 @@ RUN echo 'options(rstudio.python.installationPath = "/opt/python/conda/bin")' \
 EXPOSE 8787
 
 # Start rstudio-server
-CMD ["/usr/lib/rstudio-server/bin/rserver", "--server-daemonize", "0"]
+ENTRYPOINT mount /mnt/nfs/home && /usr/lib/rstudio-server/bin/rserver --server-daemonize 0
