@@ -3,6 +3,14 @@
 Set up an analytics environment with RStudio and Jupyterhub with docker
 containers.
 
+## Requirements
+
+- Docker/ Podman
+- docker-compose
+- To mount `/home` on host and use host users, Fedora or CentOS is required.
+  Other flavours of Linux work, but might need adjustment for getting the
+  user's information correctly.
+
 ## Quickstart
 
 ### Build all images
