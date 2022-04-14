@@ -55,7 +55,7 @@ systemctl --user enable --now podman.socket
 echo -e "export DOCKER_HOST=unix:///run/user/$UID/podman/podman.sock" >> ~/.profile
 ```
 
-### RStudio
+## RStudio
 
 RStudio is available on the configured `HOST` or as default
 <https://localhost>.
@@ -70,7 +70,7 @@ to your needs.
 > `rstudio-server` on the host system, otherwise the service will fail to start.
 > You can add such a user on your host with `sudo adduser rstudio-server`.
 
-### Jupyterhub
+## Jupyterhub
 
 Jupyterhub is available on `/jupyterhub/` the configured `HOST` or as default
 <https://localhost/jupyterhub/>.
