@@ -10,17 +10,18 @@ services:
     build:
       context: ./fedora_hub_base
       args:
-        - REGISTRY=${REGISTRY}
+        - MINICONDA_VERSION=${MINICONDA_VERSION}
+        - NFS_SERVER=${NFS_SERVER}
     image: ${REGISTRY}/fedora_hub_base
 
   rstudio:
     build:
       context: ./rstudio
       args:
+        - REGISTRY=${REGISTRY}
         - R_VERSION=${R_VERSION}
         - RSTUDIO_VERSION=${RSTUDIO_VERSION}
-        - MINICONDA_VERSION=${MINICONDA_VERSION}
-    image: ${REGISTRY}/rstudio_docker_app
+    image: ${REGISTRY}/hub_docker_rstudio
     depends_on:
       - fedora_hub_base
 
@@ -28,7 +29,12 @@ services:
     build:
       context: ./jupyterhub
       args:
-        - MINICONDA_VERSION=${MINICONDA_VERSION}
-    image: ${REGISTRY}/jupyterhub_docker_app
+        - REGISTRY=${REGISTRY}
+    image: ${REGISTRY}/hub_docker_jupyterhub
     depends_on:
       - fedora_hub_base
+
+  nfs:
+    build:
+      context: ./nfs
+    image: ${REGISTRY}/nfs-server-alpine:12

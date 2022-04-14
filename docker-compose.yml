@@ -25,11 +25,11 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
-      - hub
+      - hub-net
 
   rstudio:
-    image: ${REGISTRY}/rstudio_docker_app
-    container_name: rstudio_docker_app
+    image: ${REGISTRY}/hub_docker_rstudio
+    container_name: hub_docker_rstudio
     labels:
       - traefik.enable=true
       - traefik.http.services.rstudio.loadbalancer.server.port=8787
@@ -37,19 +37,17 @@ services:
       - traefik.http.routers.rstudio.rule=Host(`${HOST}`)
       - traefik.http.services.rstudio=rstudio
     restart: unless-stopped
+    privileged: true
     stdin_open: true
     tty: true
-    volumes:
-      - /home:/home
-      - /etc/passwd:/etc/passwd:ro
-      - /etc/group:/etc/group:ro
-      - /etc/shadow:/etc/shadow:ro
     networks:
-      - hub
+      - hub-net
+    depends_on:
+      - nfs
 
   jupyterhub:
-    image: ${REGISTRY}/jupyterhub_docker_app
-    container_name: jupyterhub_docker_app
+    image: ${REGISTRY}/hub_docker_jupyterhub
+    container_name: hub_docker_jupyterhub
     labels:
       - traefik.enable=true
       - traefik.http.services.jupyterhub.loadbalancer.server.port=8000
@@ -58,18 +56,30 @@ services:
       - traefik.http.routers.jupyterhub.middlewares=strip-jupyterhub@docker
       - traefik.http.middlewares.strip-jupyterhub.stripprefix.prefixes=/jupyterhub
     restart: unless-stopped
+    privileged: true
     stdin_open: true
     tty: true
-    volumes:
-      - /home:/home
-      - /etc/passwd:/etc/passwd:ro
-      - /etc/shadow:/etc/shadow:ro
-      - /etc/gshadow:/etc/gshadow:ro
-      - /etc/group:/etc/group:ro
-      - /etc/pam.d:/etc/pam.d:ro
-      - /etc/authselect/:/etc/authselect:ro
     networks:
-      - hub
+      - hub-net
+    depends_on:
+      - nfs
+
+  nfs:
+    image: ${REGISTRY}/nfs-server-alpine:12
+    container_name: hub_docker_nfs
+    restart: unless-stopped
+    privileged: true
+    environment:
+      - SHARED_DIRECTORY=/data
+    volumes:
+      - NFS_FOLDER:/data
+    # ports:
+    #   - "2049:2049"
+    networks:
+      - hub-net
 
 networks:
-  hub:
+  hub-net:
+
+volumes:
+  NFS_FOLDER:

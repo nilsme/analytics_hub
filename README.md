@@ -7,9 +7,6 @@ containers.
 
 - Docker/ Podman
 - docker-compose
-- To mount `/home` on host and use host users, Fedora or CentOS is required.
-  Other flavours of Linux work, but might need adjustment for getting the
-  user's information correctly.
 
 ## Quickstart
 
@@ -21,6 +18,19 @@ Go to the main directory and run `docker-compose -f docker-build.yml build`.
 
 Go to the main directory and run `docker-compose up -d` to start all
 containers in detached mode.
+
+### Create a user
+
+Create a user with UID "1000", username "analytics" and password "analytics".
+
+```shell
+./scripts/create_user.sh -i 1000 -u analytics -p analytics
+```
+
+The user's home directory is on a NFS store and shared on RStudio and
+Jupyterhub.
+
+### Access Web UI
 
 - Access RStudio at <https://localhost>
 - Access Jupyterhub at <https://localhost/jupyterhub/>
@@ -47,9 +57,6 @@ sudo curl -H "Content-Type: application/json" \
 
 Allow rootless container and run as a user.
 
-> If the volume mounts to the host system are used, the container has to be
-> run by root user.
-
 ```shell
 systemctl --user enable --now podman.socket
 echo -e "export DOCKER_HOST=unix:///run/user/$UID/podman/podman.sock" >> ~/.profile
@@ -60,23 +67,19 @@ echo -e "export DOCKER_HOST=unix:///run/user/$UID/podman/podman.sock" >> ~/.prof
 RStudio is available on the configured `HOST` or as default
 <https://localhost>.
 
-The container for RStudio will use the `/home` directory of the host as its
-`/home` directory and also use the `/etc/passwd`, `/etc/group`, and
-`/etc/shadow` from the host machine. If you don't want this, you have to
-change the `docker-compose.yml` and also the dockerfile for rstudio according
-to your needs.
-
-> If you mount the suggested volumes from the host, it does need the user
-> `rstudio-server` on the host system, otherwise the service will fail to start.
-> You can add such a user on your host with `sudo adduser rstudio-server`.
-
 ## Jupyterhub
 
 Jupyterhub is available on `/jupyterhub/` the configured `HOST` or as default
 <https://localhost/jupyterhub/>.
 
-Jupyterhub will use the `/home` directory of the host as its `/home` directory
-and also use the `/etc/passwd`, `/etc/group`, `/etc/shadow`, `/etc/gshadow`,
-`/etc/pamd.d`, and `/etc/authselect/` from the host machine. Which means
-that the Jupyterhub admin group (`jupyterhub-admins`) must exist on the host,
-even if no user is a member of the group.
+## Storage
+
+A separate container runs a NFS server with a share available only within the
+deployment. It holds the user's home directory and persists that storage
+on a local Docker volume.
+
+## Users
+
+Users are local users in the running containers. They are lost when the
+deployment is stopped. However, their home directory is kept persistent
+on the Docker volume that is used for the NFS share.

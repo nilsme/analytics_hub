@@ -1,5 +1,11 @@
 FROM fedora:35
 
+# Set nfs server
+ARG NFS_SERVER=hub_docker_nfs
+
+# Set versions
+ARG MINICONDA_VERSION
+
 # Set environment
 ENV TZ=Europe/Amsterdam
 ENV LANG C.UTF-8
@@ -43,4 +49,22 @@ RUN yum -y update && \
     wget \
     zip \
     unzip \
-    vim
+    vim \
+    nfs-utils
+
+# Install miniconda3 for Python support
+RUN wget https://repo.continuum.io/miniconda/Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh \
+    -O /tmp/miniconda.sh  && \
+    bash /tmp/miniconda.sh -f -b -p /opt/python/conda && \
+    /opt/python/conda/bin/conda update -n base -c conda-forge conda && \
+    /opt/python/conda/bin/pip install --upgrade pip && \
+    rm /tmp/miniconda.sh
+
+# Create folder for nfs mount
+RUN mkdir -p /mnt/nfs/home/
+
+# Set new default /home for new users
+RUN sed -i 's/HOME=\/home/HOME=\/mnt\/nfs\/home/g' /etc/default/useradd
+
+# Mount nfs server on new home directory on reboot
+RUN echo "${NFS_SERVER}:/ /mnt/nfs/home/  nfs      defaults    0       0" >> /etc/fstab
