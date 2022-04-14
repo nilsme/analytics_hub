@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function usage {
-  echo "Usage: $0 [ -i UID ] [ -u USER ] [ -p PASSWORD] [ -h help ]" 1>&2
+  echo "Usage: $0 [ -i UID ] [ -u USER ] [ -p PASSWORD] [ -h HELP ]" 1>&2
 }
 
 exit_abnormal() {
